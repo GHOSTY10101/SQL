@@ -1,0 +1,128 @@
+*******DAY-1***********
+
+
+-- Create a new database
+CREATE DATABASE CompanyDB;
+
+-- Use the newly created database
+USE CompanyDB;
+
+-- Create a table for Employees
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DepartmentID INT,
+    Salary DECIMAL(10, 2)
+);
+
+-- Insert sample data into Employees table
+INSERT INTO Employees (EmployeeID, FirstName, LastName, DepartmentID, Salary)
+VALUES 
+    (1, 'John', 'Doe', 101, 55000.00),
+    (2, 'Jane', 'Smith', 102, 60000.00),
+    (3, 'Michael', 'Johnson', 101, 58000.00),
+    (4, 'Emily', 'Davis', 103, 62000.00);
+
+-- Update a record in Employees table
+UPDATE Employees
+SET Salary = 63000.00
+WHERE EmployeeID = 2;
+
+-- Delete a record from Employees table
+DELETE FROM Employees
+WHERE EmployeeID = 4;
+
+-- Query all records from Employees table
+SELECT * FROM Employees;
+
+-- Drop the Employees table
+DROP TABLE Employees;
+
+-- Drop the CompanyDB database
+DROP DATABASE CompanyDB;
+
+
+-- Create a new database
+CREATE DATABASE IF NOT EXISTS CompanyDB;
+
+-- Use the newly created database
+USE CompanyDB;
+
+-- Create a table for Employees
+CREATE TABLE IF NOT EXISTS Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DepartmentID INT,
+    Salary DECIMAL(10, 2),
+    Email VARCHAR(100)
+);
+
+-- Insert sample data into Employees table
+INSERT INTO Employees (EmployeeID, FirstName, LastName, DepartmentID, Salary, Email)
+VALUES 
+    (1, 'John', 'Doe', 101, 55000.00, 'john.doe@example.com'),
+    (2, 'Jane', 'Smith', 102, 60000.00, 'jane.smith@example.com'),
+    (3, 'Michael', 'Johnson', 101, 58000.00, 'michael.johnson@example.com'),
+    (4, 'Emily', 'Davis', 103, 62000.00, 'emily.davis@example.com');
+
+-- Arithmetic Operators
+SELECT 10 + 5 AS Addition;      -- Result: 15
+SELECT 10 - 5 AS Subtraction;   -- Result: 5
+SELECT 10 * 5 AS Multiplication;-- Result: 50
+SELECT 10 / 5 AS Division;      -- Result: 2
+SELECT 10 % 3 AS Modulus;       -- Result: 1
+
+-- Comparison Operators
+SELECT * FROM Employees WHERE Salary = 60000;  -- Equal to
+SELECT * FROM Employees WHERE Salary != 60000; -- Not equal to
+SELECT * FROM Employees WHERE Salary > 60000;  -- Greater than
+SELECT * FROM Employees WHERE Salary < 60000;  -- Less than
+SELECT * FROM Employees WHERE Salary >= 60000; -- Greater than or equal to
+SELECT * FROM Employees WHERE Salary <= 60000; -- Less than or equal to
+
+-- Logical Operators
+SELECT * FROM Employees WHERE Salary > 50000 AND DepartmentID = 101;  -- AND
+SELECT * FROM Employees WHERE Salary > 60000 OR DepartmentID = 101;   -- OR
+SELECT * FROM Employees WHERE NOT DepartmentID = 101;                 -- NOT
+
+-- Bitwise Operators
+SELECT 5 & 3 AS Bitwise_AND;      -- Result: 1
+SELECT 5 | 3 AS Bitwise_OR;       -- Result: 7
+SELECT 5 ^ 3 AS Bitwise_XOR;      -- Result: 6
+SELECT ~5 AS Bitwise_NOT;         -- Result: -6
+SELECT 5 << 1 AS Bitwise_Shift_Left;  -- Result: 10
+SELECT 5 >> 1 AS Bitwise_Shift_Right; -- Result: 2
+
+-- Assignment Operators
+SET @var = 10;
+SELECT @var AS Variable;          -- Result: 10
+
+-- String Operators
+SELECT CONCAT(FirstName, ' ', LastName) AS FullName FROM Employees;
+SELECT CONCAT_WS(' ', 'Hello', 'World!') AS Concatenated_String;  -- Result: Hello World!
+
+-- Other Operators
+-- IN
+SELECT * FROM Employees WHERE DepartmentID IN (101, 102);
+
+-- BETWEEN
+SELECT * FROM Employees WHERE Salary BETWEEN 50000 AND 60000;
+
+-- LIKE
+SELECT * FROM Employees WHERE FirstName LIKE 'J%';  -- Finds any name starting with 'J'
+
+-- IS NULL / IS NOT NULL
+SELECT * FROM Employees WHERE Email IS NULL;
+
+-- Cleanup
+-- Drop the Employees table
+DROP TABLE IF EXISTS Employees;
+
+-- Drop the CompanyDB database
+DROP DATABASE IF EXISTS CompanyDB;
+
+
+
+
