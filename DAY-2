@@ -1,0 +1,175 @@
+***********DAY-2***********
+
+-- GROUP BY, ORDER BY, HAVING
+-- GROUP BY
+-- In SQL, the GROUP BY clause is used to group rows that have the same values into summary rows.
+
+use amazon;
+
+-- Example A: GROUP BY using HAVING
+SELECT category, COUNT(*) AS category_count
+FROM products
+GROUP BY category
+HAVING category_count > 5;
+
+-- Example B: GROUP BY using CONCAT
+-- Group Concat is used in MySQL to get concatenated values of expressions with more than one result per column.
+SELECT supplier, GROUP_CONCAT(DISTINCT pname) AS product_list
+FROM products
+GROUP BY supplier;
+
+-- Example C: GROUP BY with AVG
+-- Group by can be used with aggregate functions like COUNT, MAX, MIN, AVG, SUM, etc.
+SELECT location, AVG(price) AS average_price
+FROM products
+GROUP BY location;
+
+-- ORDER BY
+-- Used for ordering rows in a specific way
+
+-- Example A: ORDER BY in Ascending Order
+SELECT pid, pname, price
+FROM products
+ORDER BY price ASC;
+
+-- Example B: ORDER BY in Descending Order
+SELECT cid, cname, age
+FROM customer
+ORDER BY age DESC;
+
+-- HAVING
+-- The HAVING clause in SQL is used in conjunction with the GROUP BY clause to filter groups based on a specified condition.
+
+-- Example A: Products with an average rating greater than 4
+SELECT pname, AVG(rating) AS avg_rating
+FROM reviews
+GROUP BY pname
+HAVING avg_rating > 4;
+
+-- Example B: Locations with total sales greater than 100000
+SELECT location, SUM(sales) AS total_sales
+FROM sales
+GROUP BY location
+HAVING total_sales > 100000;
+
+-- QUESTIONS
+
+-- GROUP BY:
+-- 1) Write a query to find the total sales for each product.
+SELECT pname, SUM(sales) AS total_sales
+FROM sales
+GROUP BY pname;
+
+-- 2) Write a query to find the number of customers in each age range (e.g., 0-18, 19-35, 36-50, 50+).
+SELECT CASE
+    WHEN age BETWEEN 0 AND 18 THEN '0-18'
+    WHEN age BETWEEN 19 AND 35 THEN '19-35'
+    WHEN age BETWEEN 36 AND 50 THEN '36-50'
+    ELSE '50+'
+    END AS age_range, COUNT(*) AS customer_count
+FROM customer
+GROUP BY age_range;
+
+-- 3) Write a query to find the average order amount grouped by customer city.
+SELECT city, AVG(order_amount) AS avg_order_amount
+FROM orders
+GROUP BY city;
+
+-- ORDER BY:
+-- 1) Write a query to retrieve all products ordered by their name in ascending order.
+SELECT *
+FROM products
+ORDER BY pname ASC;
+
+-- 2) Write a query to retrieve all orders ordered by their date in descending order.
+SELECT *
+FROM orders
+ORDER BY order_date DESC;
+
+-- 3) Write a query to retrieve all employees ordered by their department and then by their salary in ascending order.
+SELECT *
+FROM employees
+ORDER BY department, salary ASC;
+
+-- HAVING:
+-- 1) Write a query to find the suppliers who supply more than 50 different products.
+SELECT supplier, COUNT(DISTINCT pname) AS product_count
+FROM products
+GROUP BY supplier
+HAVING product_count > 50;
+
+-- 2) Write a query to find the customers who have placed more than 5 orders.
+SELECT cid, cname, COUNT(*) AS order_count
+FROM orders
+GROUP BY cid, cname
+HAVING order_count > 5;
+
+-- 3) Write a query to find the stores with an average customer rating between 3 and 4.
+SELECT store_id, AVG(customer_rating) AS avg_rating
+FROM store_reviews
+GROUP BY store_id
+HAVING avg_rating BETWEEN 3 AND 4;
+
+-- DQL COMMANDS
+-- 1) DQL stands for Data Query Language.
+
+-- SELECT
+-- Used to retrieve rows selected from one or more tables.
+-- SELECT can be used in many ways:
+
+-- A) SELECT With DISTINCT Clause
+-- The DISTINCT Clause after SELECT eliminates duplicate rows from the result set.
+SELECT DISTINCT cname, addr 
+FROM customer;
+
+-- B) SELECT all columns(*)
+SELECT * 
+FROM orders;
+
+-- C) SELECT by column name
+SELECT oid 
+FROM orders;
+
+-- D) SELECT with LIKE(%)
+-- Helps in searching using parts of the name.
+
+-- a) "Ra" anywhere
+SELECT * 
+FROM customer 
+WHERE cname LIKE "%Ra%";
+
+-- b) Begins With "Ra"
+SELECT * 
+FROM customer 
+WHERE cname LIKE "Ra%";
+
+-- c) Ends With "vi"
+SELECT * 
+FROM customer 
+WHERE cname LIKE "%vi";
+
+-- E) SELECT with CASE or IF
+-- a) CASE
+SELECT cid, cname,
+       CASE 
+           WHEN cid > 102 THEN 'Pass' 
+           ELSE 'Fail' 
+       END AS Remark
+FROM customer;
+
+-- b) IF
+SELECT cid, cname,
+       IF(cid > 102, 'Pass', 'Fail') AS Remark
+FROM customer;
+
+-- F) SELECT with a LIMIT Clause
+SELECT * 
+FROM customer
+ORDER BY cid
+LIMIT 2;
+
+-- G) SELECT with WHERE
+SELECT * 
+FROM customer 
+WHERE cname = "Ravi";
+
