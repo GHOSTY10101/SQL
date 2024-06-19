@@ -1,0 +1,359 @@
+-- Creating the database
+CREATE DATABASE amazon;
+
+-- Using the database
+USE amazon;
+
+-- Creating the products table
+CREATE TABLE products (
+    pid INT(3) PRIMARY KEY,
+    pname VARCHAR(50) NOT NULL,
+    price INT(10) NOT NULL,
+    stock INT(5),
+    location VARCHAR(30) CHECK(location IN ('Mumbai', 'Delhi'))
+);
+
+-- Creating the customer table
+CREATE TABLE customer (
+    cid INT(3) PRIMARY KEY,
+    cname VARCHAR(30) NOT NULL,
+    age INT(3),
+    addr VARCHAR(50)
+);
+
+-- Creating the orders table
+CREATE TABLE orders (
+    oid INT(3) PRIMARY KEY,
+    cid INT(3),
+    pid INT(3),
+    amt INT(10) NOT NULL,
+    FOREIGN KEY(cid) REFERENCES customer(cid),
+    FOREIGN KEY(pid) REFERENCES products(pid)
+);
+
+-- Creating the payment table
+CREATE TABLE payment (
+    pay_id INT(3) PRIMARY KEY,
+    oid INT(3),
+    amount INT(10) NOT NULL,
+    mode VARCHAR(30) CHECK(mode IN('upi', 'credit', 'debit')),
+    status VARCHAR(30),
+    FOREIGN KEY(oid) REFERENCES orders(oid)
+);
+
+-- Creating the employee table
+CREATE TABLE employee (
+    eid INT(4) PRIMARY KEY,
+    ename VARCHAR(40) NOT NULL,
+    phone_no INT(10) NOT NULL,
+    department VARCHAR(40) NOT NULL,
+    manager_id INT(4)
+);
+
+-- Inserting values into the products table
+INSERT INTO products VALUES 
+(1, 'HP Laptop', 50000, 15, 'Mumbai'),
+(2, 'Realme Mobile', 20000, 30, 'Delhi'),
+(3, 'Boat Earpods', 3000, 50, 'Delhi'),
+(4, 'Lenovo Laptop', 40000, 15, 'Mumbai'),
+(5, 'Charger', 1000, 0, 'Mumbai'),
+(6, 'MacBook', 78000, 6, 'Delhi'),
+(7, 'JBL Speaker', 6000, 2, 'Delhi');
+
+-- Inserting values into the customer table
+INSERT INTO customer VALUES 
+(101, 'Ravi', 30, 'Mumbai'),
+(102, 'Rahul', 25, 'Delhi'),
+(103, 'Simran', 32, 'Mumbai'),
+(104, 'Purvesh', 28, 'Delhi'),
+(105, 'Sanjana', 22, 'Mumbai');
+
+-- Inserting values into the orders table
+INSERT INTO orders VALUES 
+(10001, 102, 3, 2700),
+(10002, 104, 2, 18000),
+(10003, 105, 5, 900),
+(10004, 101, 1, 46000);
+
+-- Inserting values into the payment table
+INSERT INTO payment VALUES 
+(1, 10001, 2700, 'upi', 'completed'),
+(2, 10002, 18000, 'credit', 'completed'),
+(3, 10003, 900, 'debit', 'in process');
+
+-- Inserting values into the employee table
+INSERT INTO employee VALUES 
+(401, 'Rohan', 364832549, 'Analysis', 404),
+(402, 'Rahul', 782654123, 'Delivery', 406),
+(403, 'Shyam', 856471235, 'Delivery', 402),
+(404, 'Neha', 724863287, 'Sales', 402),
+(405, 'Sanjana', 125478954, 'HR', 404),
+(406, 'Sanjay', 956478535, 'Tech', NULL);
+
+-- Displaying table contents
+SELECT * FROM products;
+SELECT * FROM customer;
+SELECT * FROM orders;
+SELECT * FROM payment;
+SELECT * FROM employee;
+-- Example 1: Customers who placed orders
+SELECT customer.cid, customer.cname, orders.oid 
+FROM orders 
+INNER JOIN customer ON orders.cid = customer.cid;
+
+-- Example 2: Customers and the products they ordered
+SELECT customer.cid, customer.cname, products.pid, products.pname, orders.oid 
+FROM orders 
+INNER JOIN products ON orders.pid = products.pid 
+INNER JOIN customer ON orders.cid = customer.cid;
+-- Products and their order amounts
+SELECT products.pid, products.pname, orders.amt, orders.oid 
+FROM products 
+LEFT JOIN orders ON orders.pid = products.pid;
+-- Order details and their payments
+SELECT * FROM payment 
+RIGHT JOIN orders ON orders.oid = payment.oid;
+-- All orders and products details
+SELECT orders.oid, products.pid, products.pname, orders.amt, products.price, products.stock, products.location 
+FROM orders 
+LEFT JOIN products ON orders.pid = products.pid 
+UNION 
+SELECT orders.oid, products.pid, products.pname, orders.amt, products.price, products.stock, products.location 
+FROM orders 
+RIGHT JOIN products ON orders.pid = products.pid;
+
+-- Employees and their managers
+SELECT e1.ename AS Employee, e2.ename AS Manager 
+FROM employee e1 
+INNER JOIN employee e2 ON e1.manager_id = e2.eid;
+
+-- All combinations of customers and orders where the amount is greater than 3000
+SELECT customer.cid, customer.cname, orders.oid, orders.amt 
+FROM customer 
+CROSS JOIN orders 
+WHERE customer.cid = orders.cid AND orders.amt > 3000;
+Display details of all orders delivered from "Mumbai".
+
+SELECT orders.*, products.location 
+FROM orders 
+LEFT JOIN products ON orders.pid = products.pid 
+WHERE products.location = 'Mumbai';
+Display details of all orders whose payment was made through "UPI".
+
+
+SELECT orders.*, payment.mode 
+FROM orders 
+RIGHT JOIN payment ON orders.oid = payment.oid 
+WHERE payment.mode = 'upi';
+Display order ID, amount, customer name, and payment mode for orders made by people below 30 years.
+
+
+SELECT orders.oid, orders.amt, customer.cname, payment.mode 
+FROM orders 
+INNER JOIN payment ON orders.oid = payment.oid 
+INNER JOIN customer ON orders.cid = customer.cid 
+WHERE customer.age < 30;
+Display order ID, amount, customer name, and payment mode for orders made by people below 30 years with "Credit" payment mode.
+
+
+SELECT orders.oid, orders.amt, customer.cname, payment.mode 
+FROM orders 
+INNER JOIN payment ON orders.oid = payment.oid 
+INNER JOIN customer ON orders.cid = customer.cid 
+WHERE customer.age < 30 AND payment.mode = 'credit';
+Display order ID, amount, customer name, product name, and location of orders whose payment is still pending or in process.
+
+
+SELECT orders.oid, customer.cname, products.pname, payment.amount, payment.status, products.location 
+FROM orders 
+INNER JOIN products ON orders.pid = products.pid 
+INNER JOIN customer ON orders.cid = customer.cid 
+INNER JOIN payment ON orders.oid = payment.oid 
+WHERE payment.status IN ('in process', 'pending');
+Display order ID, customer name, and product name for all orders.
+
+
+SELECT orders.oid, customer.cname, products.pname 
+FROM orders 
+INNER JOIN customer ON orders.cid = customer.cid 
+INNER JOIN products ON orders.pid = products.pid;
+
+
+
+
+
+
+***********************************************************
+
+
+-- SQL Anomalies, Candidate Keys, Primary Keys, Foreign Keys, and Normalization
+
+-- Anomalies in Relational Databases
+
+-- 1. Insertion Anomalies
+-- Insertion anomalies occur when we cannot insert data into the database due to missing dependencies.
+
+-- Example:
+-- Attempting to add an order for a new customer not yet in the `Customer` table:
+INSERT INTO Orders (oid, cid, pid, amt)
+VALUES (10005, 106, 2, 1);  -- Assuming CustomerID 106 doesn't exist in the Customer table
+
+-- 2. Deletion Anomalies
+-- Deletion anomalies occur when deleting a record also unintentionally deletes valuable data due to table structure.
+
+-- Example:
+-- Deleting a product that has been ordered, which will leave orphaned order records:
+DELETE FROM Products
+WHERE pid = 5;  -- Assuming ProductID 5 is 'Charger'
+
+-- 3. Update Anomalies
+-- Update anomalies occur when modifying data requires updating multiple records to maintain consistency.
+
+-- Example:
+-- Updating the price of a product in the `Products` table:
+UPDATE Products
+SET price = 52000
+WHERE pid = 1;  -- Changing the price of HP Laptop
+
+-- If the old price of `HP Laptop` is stored in the `Orders` table, it won't be updated automatically, causing inconsistencies.
+
+-- Candidate Keys and Primary Keys
+
+-- Candidate keys are attributes or combinations of attributes that can uniquely identify each row in a table. Each candidate key can be a potential primary key.
+
+-- Example:
+-- In the `Products` table:
+-- `pid` is a candidate key as it uniquely identifies each product.
+
+-- Primary Keys
+-- A primary key is a chosen candidate key that uniquely identifies each record in a table. It must have unique values and cannot contain nulls.
+
+-- Example:
+-- Defining a primary key while creating a table:
+CREATE TABLE Products (
+    pid INT PRIMARY KEY,
+    pname VARCHAR(50) NOT NULL,
+    price INT NOT NULL,
+    stock INT,
+    location VARCHAR(30) CHECK (location IN ('Mumbai', 'Delhi'))
+);
+
+-- Altering a Table to Add or Drop a Primary Key
+-- Adding a Primary Key:
+ALTER TABLE Products
+ADD PRIMARY KEY (pid);
+
+-- Dropping a Primary Key:
+ALTER TABLE Products
+DROP PRIMARY KEY;
+
+-- Foreign Keys
+
+-- A foreign key is a column or set of columns that establishes a relationship between the data in two tables, referencing the primary key in another table.
+
+-- Need for Foreign Keys:
+-- Data Integrity: Ensures consistency and validity of data.
+-- Establish Relationships: Links data across tables, making it easier to retrieve and manage.
+-- Data Security: Prevents unauthorized changes to referenced data.
+
+-- Creating a Foreign Key
+-- Example:
+-- Creating a foreign key to link `Orders` with `Products` and `Customer` tables:
+CREATE TABLE Orders (
+    oid INT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt INT NOT NULL,
+    FOREIGN KEY (cid) REFERENCES Customer(cid),
+    FOREIGN KEY (pid) REFERENCES Products(pid)
+);
+
+-- Altering a Table to Add or Drop a Foreign Key
+-- Adding a Foreign Key:
+ALTER TABLE Orders
+ADD FOREIGN KEY (pid) REFERENCES Products(pid);
+
+-- Dropping a Foreign Key:
+ALTER TABLE Orders
+DROP FOREIGN KEY orders_ibfk_1;
+
+-- Normalization
+
+-- Normalization is the process of organizing a database to reduce redundancy and improve data integrity.
+
+-- 1NF (First Normal Form)
+-- A table is in 1NF if it has only single-valued attributes and no repeating groups.
+
+-- Example of 1NF:
+CREATE TABLE Products (
+    pid INT PRIMARY KEY,
+    pname VARCHAR(50) NOT NULL,
+    price INT NOT NULL,
+    stock INT,
+    location VARCHAR(30) CHECK (location IN ('Mumbai', 'Delhi'))
+);
+
+-- 2NF (Second Normal Form)
+-- A table is in 2NF if it is in 1NF and all non-key attributes are fully dependent on the primary key.
+
+-- Example of Violating 2NF:
+-- If `Orders` has `product_color` that depends only on `pid`, not the whole key:
+CREATE TABLE Orders (
+    oid INT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt INT NOT NULL,
+    product_color VARCHAR(20)
+);
+
+-- Fix for 2NF:
+-- Separate into two tables:
+CREATE TABLE Order_Items (
+    order_item_id INT PRIMARY KEY,
+    oid INT,
+    pid INT,
+    product_color VARCHAR(20),
+    FOREIGN KEY (oid) REFERENCES Orders(oid),
+    FOREIGN KEY (pid) REFERENCES Products(pid)
+);
+
+-- 3NF (Third Normal Form)
+-- A table is in 3NF if it is in 2NF and has no transitive dependencies.
+
+-- Example of Violating 3NF:
+-- Including `customer_city` in `Orders`:
+CREATE TABLE Orders (
+    oid INT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt INT NOT NULL,
+    customer_city VARCHAR(50)
+);
+
+-- Fix for 3NF:
+-- Remove transitive dependency by not including `customer_city` in `Orders`:
+SELECT Orders.oid, Customer.cid, Customer.customer_city
+FROM Orders
+JOIN Customer ON Orders.cid = Customer.cid;
+
+-- BCNF (Boyce-Codd Normal Form)
+-- A table is in BCNF if it is in 3NF and every determinant is a candidate key.
+
+-- Example of BCNF Violation and Fix:
+-- If a composite key {cid, pid} is not a superkey:
+-- Decompose into two tables to fix BCNF violation
+CREATE TABLE Order_Info (
+    oid INT PRIMARY KEY,
+    amt INT NOT NULL
+);
+
+CREATE TABLE Order_Details (
+    oid INT,
+    cid INT,
+    pid INT,
+    PRIMARY KEY (oid, cid, pid),
+    FOREIGN KEY (oid) REFERENCES Orders(oid),
+    FOREIGN KEY (cid) REFERENCES Customer(cid),
+    FOREIGN KEY (pid) REFERENCES Products(pid)
+);
+
