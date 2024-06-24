@@ -1,0 +1,252 @@
+-- Create database
+CREATE DATABASE amazon;
+
+-- Select database
+USE amazon;
+
+-- Create 'products' table
+CREATE TABLE products (
+    pid INT(3) PRIMARY KEY,
+    pname VARCHAR(50) NOT NULL,
+    price INT(10) NOT NULL,
+    stock INT(5),
+    location VARCHAR(30) CHECK(location IN ('Mumbai', 'Delhi'))
+);
+
+-- Create 'customer' table
+CREATE TABLE customer (
+    cid INT(3) PRIMARY KEY,
+    cname VARCHAR(30) NOT NULL,
+    age INT(3),
+    addr VARCHAR(50)
+);
+
+-- Create 'orders' table
+CREATE TABLE orders (
+    oid INT(3) PRIMARY KEY,
+    cid INT(3),
+    pid INT(3),
+    amt INT(10) NOT NULL,
+    FOREIGN KEY(cid) REFERENCES customer(cid),
+    FOREIGN KEY(pid) REFERENCES products(pid)
+);
+
+-- Create 'payment' table
+CREATE TABLE payment (
+    pay_id INT(3) PRIMARY KEY,
+    oid INT(3),
+    amount INT(10) NOT NULL,
+    mode VARCHAR(30) CHECK(mode IN('upi', 'credit', 'debit')),
+    status VARCHAR(30),
+    FOREIGN KEY(oid) REFERENCES orders(oid)
+);
+
+-- Insert data into 'products' table
+INSERT INTO products VALUES
+(1, 'HP Laptop', 50000, 15, 'Mumbai'),
+(2, 'Realme Mobile', 20000, 30, 'Delhi'),
+(3, 'Boat earpods', 3000, 50, 'Delhi'),
+(4, 'Levono Laptop', 40000, 15, 'Mumbai'),
+(5, 'Charger', 1000, 0, 'Mumbai'),
+(6, 'Mac Book', 78000, 6, 'Delhi'),
+(7, 'JBL speaker', 6000, 2, 'Delhi');
+
+-- Insert data into 'customer' table
+INSERT INTO customer VALUES
+(101, 'Ravi', 30, 'fdslfjl'),
+(102, 'Rahul', 25, 'fdslfjl'),
+(103, 'Simran', 32, 'fdslfjl'),
+(104, 'Purvesh', 28, 'fdslfjl'),
+(105, 'Sanjana', 22, 'fdslfjl');
+
+-- Insert data into 'orders' table
+INSERT INTO orders VALUES
+(10001, 102, 3, 2700),
+(10002, 104, 2, 18000),
+(10003, 105, 5, 900),
+(10004, 101, 1, 46000);
+
+-- Insert data into 'payment' table
+INSERT INTO payment VALUES
+(1, 10001, 2700, 'upi', 'completed'),
+(2, 10002, 18000, 'credit', 'completed'),
+(3, 10003, 900, 'debit', 'in process');
+
+-- Transaction Control Commands
+COMMIT;
+ROLLBACK;
+SAVEPOINT a;
+ROLLBACK TO a;
+
+-- Triggers
+
+-- Trigger to log product insertions
+DELIMITER //
+CREATE TRIGGER products_after_insert
+AFTER INSERT ON products
+FOR EACH ROW
+BEGIN
+  INSERT INTO product_log (pid, pname, price, stock, location, inserted_at)
+  VALUES (NEW.pid, NEW.pname, NEW.price, NEW.stock, NEW.location, NOW());
+END //
+DELIMITER ;
+
+-- Trigger to update product stock after an order is inserted
+DELIMITER //
+CREATE TRIGGER orders_after_insert
+AFTER INSERT ON orders
+FOR EACH ROW
+BEGIN
+  UPDATE products
+  SET stock = stock - 1
+  WHERE pid = NEW.pid;
+END //
+DELIMITER ;
+
+-- Trigger to log product updates
+DELIMITER //
+CREATE TRIGGER products_after_update
+AFTER UPDATE ON products
+FOR EACH ROW
+BEGIN
+  IF OLD.pid <> NEW.pid OR OLD.pname <> NEW.pname OR OLD.price <> NEW.price OR OLD.stock <> NEW.stock OR OLD.location <> NEW.location THEN
+    INSERT INTO product_log (pid, pname, price, stock, location, updated_at)
+    VALUES (OLD.pid, OLD.pname, OLD.price, OLD.stock, OLD.location, NOW());
+  END IF;
+END //
+DELIMITER ;
+
+-- Trigger to prevent product deletion if there are existing orders
+DELIMITER //
+CREATE TRIGGER products_after_delete
+AFTER DELETE ON products
+FOR EACH ROW
+BEGIN
+  DECLARE has_orders INT DEFAULT 0;
+
+  SELECT COUNT(*) INTO has_orders
+  FROM orders
+  WHERE pid = OLD.pid;
+
+  IF has_orders > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete product with existing orders. Update or delete orders first.';
+  END IF;
+END //
+DELIMITER ;
+
+-- Trigger for automatic payment status on payment insert
+DELIMITER //
+CREATE TRIGGER set_default_payment_status
+BEFORE INSERT ON payment
+FOR EACH ROW
+BEGIN
+  IF NEW.status IS NULL THEN
+    SET NEW.status = 'Pending';
+  END IF;
+END //
+DELIMITER ;
+
+-- Views
+
+-- View for active customers in Mumbai
+CREATE OR REPLACE VIEW active_customers_mumbai AS
+SELECT c.cid, c.cname, c.addr
+FROM customer c
+WHERE c.age > 25 AND c.addr LIKE '%Mumbai%';
+
+-- View for customer orders
+CREATE VIEW CustomerOrders AS
+SELECT c.cid, c.cname, o.oid, o.amt, p.pname
+FROM customer c
+JOIN orders o ON c.cid = o.cid
+JOIN products p ON o.pid = p.pid;
+
+-- View for total orders by location
+CREATE VIEW TotalOrdersByLocation AS
+SELECT p.location, p.pname, COUNT(o.oid) AS total_orders
+FROM products p
+JOIN orders o ON p.pid = o.pid
+GROUP BY p.location, p.pname;
+
+-- View for payment status
+CREATE VIEW OrderPaymentStatus AS
+SELECT o.oid, o.amt, p.mode, p.status
+FROM orders o
+JOIN payment p ON o.oid = p.oid;
+
+-- Drop views
+DROP VIEW active_customers_mumbai;
+DROP VIEW TotalOrdersByLocation;
+
+-- Additional Triggers
+
+-- Trigger to update payment status after an order is completed
+DELIMITER //
+CREATE TRIGGER update_payment_status
+AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'completed' THEN
+        UPDATE payment
+        SET status = 'completed'
+        WHERE oid = NEW.oid;
+    END IF;
+END //
+DELIMITER ;
+
+-- Trigger to check stock availability before inserting an order
+DELIMITER //
+CREATE TRIGGER check_stock_before_order
+BEFORE INSERT ON orders
+FOR EACH ROW
+BEGIN
+    DECLARE available_stock INT;
+    SELECT stock INTO available_stock FROM products WHERE pid = NEW.pid;
+    IF available_stock < NEW.amt THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Insufficient stock for this product';
+    END IF;
+END //
+DELIMITER ;
+
+-- Trigger to update stock after an order is placed
+DELIMITER //
+CREATE TRIGGER update_stock_after_order
+AFTER INSERT ON orders
+FOR EACH ROW
+BEGIN
+    UPDATE products
+    SET stock = stock - NEW.amt
+    WHERE pid = NEW.pid;
+END // 
+DELIMITER ;
+
+-- Transaction Control Examples
+
+-- 1) Committing a transaction
+START TRANSACTION;
+INSERT INTO products (pid, pname, price, stock, location) VALUES (8, 'iPhone 12', 79900, 10, 'Delhi');
+INSERT INTO customer (cid, cname, age, addr) VALUES (106, 'John Doe', 35, '123 Main Street');
+INSERT INTO orders (oid, cid, pid, amt) VALUES (10005, 106, 8, 79900);
+INSERT INTO payment (pay_id, oid, amount, mode, status) VALUES (4, 10005, 79900, 'credit', 'completed');
+COMMIT;
+
+-- 2) Rolling back a transaction
+START TRANSACTION;
+INSERT INTO products (pid, pname, price, stock, location) VALUES (8, 'iPhone 12', 79900, 10, 'Delhi');
+INSERT INTO customer (cid, cname, age, addr) VALUES (106, 'John Doe', 35, '123 Main Street');
+INSERT INTO orders (oid, cid, pid, amt) VALUES (10005, 106, 8, 79900);
+INSERT INTO payment (pay_id, oid, amount, mode, status) VALUES (4, 10005, 79900, 'credit', 'completed');
+ROLLBACK;
+
+-- 3) Using savepoint and rollback to savepoint
+START TRANSACTION;
+INSERT INTO products (pid, pname, price, stock, location) VALUES (8, 'iPhone 12', 79900, 10, 'Delhi');
+INSERT INTO customer (cid, cname, age, addr) VALUES (106, 'John Doe', 35, '123 Main Street');
+INSERT INTO orders (oid, cid, pid, amt) VALUES (10005, 106, 8, 79900);
+INSERT INTO payment (pay_id, oid, amount, mode, status) VALUES (4, 10005, 79900, 'credit', 'completed');
+SAVEPOINT A;
+ROLLBACK TO A;
+
+-- Dropping a view if it exists
+DROP VIEW IF EXISTS payment_order_customer_details;
