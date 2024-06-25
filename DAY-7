@@ -1,0 +1,256 @@
+# Importing NumPy
+import numpy as np
+
+# 1. Creating Arrays
+
+# From a list
+arr = np.array([1, 2, 3, 4, 5])
+print(arr)
+# Output: [1 2 3 4 5]
+
+# Multidimensional array
+arr = np.array([[1, 2, 3], [4, 5, 6]])
+print(arr)
+# Output: [[1 2 3]
+#          [4 5 6]]
+
+# 2. Array Initialization
+
+# Zeros
+zeros = np.zeros((3, 3))
+print(zeros)
+# Output: [[0. 0. 0.]
+#          [0. 0. 0.]
+#          [0. 0. 0.]]
+
+# Ones
+ones = np.ones((2, 2))
+print(ones)
+# Output: [[1. 1.]
+#          [1. 1.]]
+
+# Empty
+empty = np.empty((2, 2))
+print(empty)
+# Output: Uninitialized array with arbitrary values
+
+# Arange
+arr = np.arange(0, 10, 2)
+print(arr)
+# Output: [0 2 4 6 8]
+
+# Linspace
+arr = np.linspace(0, 1, 5)
+print(arr)
+# Output: [0.   0.25 0.5  0.75 1.  ]
+
+# Identity matrix
+identity = np.eye(3)
+print(identity)
+# Output: [[1. 0. 0.]
+#          [0. 1. 0.]
+#          [0. 0. 1.]]
+
+# 3. Array Attributes
+
+# Shape
+arr = np.array([[1, 2, 3], [4, 5, 6]])
+print(arr.shape)
+# Output: (2, 3)
+
+# Size
+print(arr.size)
+# Output: 6
+
+# Number of dimensions
+print(arr.ndim)
+# Output: 2
+
+# 4. Reshaping Arrays
+
+arr = np.arange(1, 13)
+reshaped_arr = arr.reshape(3, 4)
+print(reshaped_arr)
+# Output: [[ 1  2  3  4]
+#          [ 5  6  7  8]
+#          [ 9 10 11 12]]
+
+# Flattening array
+flat_arr = reshaped_arr.flatten()
+print(flat_arr)
+# Output: [ 1  2  3  4  5  6  7  8  9 10 11 12]
+
+# 5. Array Indexing and Slicing
+
+# Indexing
+arr = np.array([1, 2, 3, 4, 5])
+print(arr[0])
+# Output: 1
+
+# Slicing
+print(arr[1:4])
+# Output: [2 3 4]
+
+# 6. Advanced Indexing
+
+# Boolean indexing
+arr = np.array([1, 2, 3, 4, 5])
+print(arr[arr > 2])
+# Output: [3 4 5]
+
+# Fancy indexing
+arr = np.array([1, 2, 3, 4, 5])
+print(arr[[0, 2, 4]])
+# Output: [1 3 5]
+
+# 7. Array Operations
+
+# Element-wise addition
+arr1 = np.array([1, 2, 3])
+arr2 = np.array([4, 5, 6])
+print(arr1 + arr2)
+# Output: [5 7 9]
+
+# Element-wise multiplication
+print(arr1 * arr2)
+# Output: [ 4 10 18]
+
+# Matrix multiplication
+arr1 = np.array([[1, 2], [3, 4]])
+arr2 = np.array([[5, 6], [7, 8]])
+print(np.dot(arr1, arr2))
+# Output: [[19 22]
+#          [43 50]]
+
+# 8. Universal Functions (ufuncs)
+
+# Sine function
+arr = np.array([0, np.pi/2, np.pi])
+print(np.sin(arr))
+# Output: [0.000000e+00 1.000000e+00 1.224647e-16]
+
+# Exponential function
+print(np.exp(arr))
+# Output: [ 1.         4.81047738 23.14069263]
+
+# Square root
+print(np.sqrt(arr))
+# Output: [0.         1.25331414 1.77245385]
+
+# 9. Statistical Functions
+
+arr = np.array([1, 2, 3, 4, 5])
+print(np.mean(arr))
+# Output: 3.0
+
+print(np.median(arr))
+# Output: 3.0
+
+print(np.std(arr))
+# Output: 1.4142135623730951
+
+print(np.sum(arr))
+# Output: 15
+
+print(np.min(arr))
+# Output: 1
+
+print(np.max(arr))
+# Output: 5
+
+# 10. Broadcasting
+
+arr1 = np.array([1, 2, 3])
+arr2 = np.array([[1], [2], [3]])
+print(arr1 + arr2)
+# Output: [[2 3 4]
+#          [3 4 5]
+#          [4 5 6]]
+
+# 11. Linear Algebra
+
+# Determinant
+arr = np.array([[1, 2], [3, 4]])
+print(np.linalg.det(arr))
+# Output: -2.0000000000000004
+
+# Inverse
+print(np.linalg.inv(arr))
+# Output: [[-2.   1. ]
+#          [ 1.5 -0.5]]
+
+# Eigenvalues and Eigenvectors
+values, vectors = np.linalg.eig(arr)
+print(values)
+# Output: [-0.37228132  5.37228132]
+print(vectors)
+# Output: [[-0.82456484 -0.41597356]
+#          [ 0.56576746 -0.90937671]]
+
+# 12. Random Number Generation
+
+# Random numbers between 0 and 1
+rand_arr = np.random.rand(3, 3)
+print(rand_arr)
+# Output: 3x3 array with random values
+
+# Random integers
+rand_int_arr = np.random.randint(1, 10, size=(3, 3))
+print(rand_int_arr)
+# Output: 3x3 array with random integers between 1 and 10
+
+# Normal distribution
+normal_arr = np.random.normal(0, 1, size=(3, 3))
+print(normal_arr)
+# Output: 3x3 array with values from normal distribution
+
+# 13. Sorting Arrays
+
+arr = np.array([3, 1, 2, 5, 4])
+print(np.sort(arr))
+# Output: [1 2 3 4 5]
+
+# Sorting along an axis
+arr = np.array([[3, 2, 1], [6, 5, 4]])
+print(np.sort(arr, axis=0))
+# Output: [[3 2 1]
+#          [6 5 4]]
+
+# 14. Stacking and Splitting Arrays
+
+# Horizontal stacking
+arr1 = np.array([1, 2, 3])
+arr2 = np.array([4, 5, 6])
+print(np.hstack((arr1, arr2)))
+# Output: [1 2 3 4 5 6]
+
+# Vertical stacking
+print(np.vstack((arr1, arr2)))
+# Output: [[1 2 3]
+#          [4 5 6]]
+
+# Splitting arrays
+arr = np.array([1, 2, 3, 4, 5, 6])
+print(np.split(arr, 3))
+# Output: [array([1, 2]), array([3, 4]), array([5, 6])]
+
+# 15. Handling Missing Data
+
+arr = np.array([1, 2, np.nan, 4, 5])
+print(np.isnan(arr))
+# Output: [False False  True False False]
+
+# Replace NaN with 0
+arr[np.isnan(arr)] = 0
+print(arr)
+# Output: [1. 2. 0. 4. 5.]
+
+# 16. Saving and Loading Arrays
+
+# Saving
+np.save('array.npy', arr)
+
+# Loading
+loaded_arr = np.load('array.npy')
+print(loaded_arr)
+# Output: [1. 2. 0. 4. 5.]
